@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Learning Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header>
+    <img src="images/logo.png" alt="E-Learn Logo" class="logo">
+    <nav>
+      <ul>
+        <li><a href="#signup">Sign Up</a></li>
+        <li><a href="#upload">Upload Docs</a></li>
+        <li><a href="#assessments">Assessments</a></li>
+        <li><a href="#future">Future of Learning</a></li>
+        <li><a href="#communication">LMS Chat</a></li>
+        <li><a href="#admin">Admin Dashboard</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="hero">
+    <img src="images/elearn.png" alt="Learning Journey" class="hero-img">
+    <h1>Welcome to E-Learn</h1>
+    <p>Your journey to knowledge begins here.</p>
+  </section>
+
+  <!-- Feature 1: Sign Up -->
+  <section id="signup">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input type="text" placeholder="Username" required><br>
+      <input type="email" placeholder="Email" required><br>
+      <input type="password" placeholder="Password" required><br>
+      <button type="submit">Sign Up</button>
+    </form>
+  </section>
+
+  <!-- Feature 2: Upload Documents -->
+  <section id="upload">
+    <h2>Upload Documents</h2>
+    <input type="file" id="fileInput"><br>
+    <button onclick="uploadFile()">Upload</button>
+    <p id="uploadStatus"></p>
+  </section>
+
+  <!-- Feature 3: Responsive Design -->
+  <section id="responsive">
+    <h2>Responsive Design</h2>
+    <p>This website adjusts based on screen size. Try resizing your browser!</p>
+  </section>
+
+  <!-- Feature 4: Online Assessments -->
+  <section id="assessments">
+    <h2>Online Assessments</h2>
+    <p>What is 2 + 2?</p>
+    <input type="text" id="answer"><br>
+    <button onclick="checkAnswer()">Submit</button>
+    <p id="result"></p>
+  </section>
+
+  <!-- Feature 5: Future of E-Learning -->
+  <section id="future">
+    <h2>Future of E-Learning</h2>
+    <img src="images/future.png" alt="Future of Learning" class="future-img">
+    <p>AI, AR/VR, gamification, and mobile learning are transforming how we study!</p>
+  </section>
+
+  <!-- Feature 6: Communication through LMS -->
+  <section id="communication">
+    <h2>LMS Chat</h2>
+    <div id="chatBox"></div>
+    <input type="text" id="chatInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+  </section>
+
+  <!-- Feature 7: Admin Dashboard -->
+  <section id="admin">
+    <h2>Admin Dashboard</h2>
+    <p>Users Registered: <span id="userCount">0</span></p>
+    <p>Documents Uploaded: <span id="docCount">0</span></p>
+    <p>Assessments Taken: <span id="assessmentCount">0</span></p>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
