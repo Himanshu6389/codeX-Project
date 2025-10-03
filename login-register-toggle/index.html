@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Login/Register Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            margin-bottom: 30px;
+            position: relative;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .toggle-btn.active {
+            color: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: white;
+            border-radius: 50px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-slider.register {
+            transform: translateX(100%);
+        }
+
+        .forms-wrapper {
+            position: relative;
+            height: 350px;
+            overflow: hidden;
+        }
+
+        .form {
+            position: absolute;
+            width: 100%;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+
+        .form.login {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .form.login.hide {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .form.register {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .form.register.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-input.valid {
+            border-color: #4ade80;
+        }
+
+        .form-input.invalid {
+            border-color: #ef4444;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .validation-message {
+            position: absolute;
+            bottom: -18px;
+            left: 20px;
+            font-size: 12px;
+            color: #ef4444;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .validation-message.valid {
+            color: #4ade80;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 30px 25px;
+                margin: 10px;
+            }
+            
+            .forms-wrapper {
+                height: 400px;
+            }
+        }
+
+        /* Success animation */
+        .success-animation {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 3px solid #4ade80;
+            border-radius: 50%;
+            opacity: 0;
+            animation: successPulse 0.6s ease-out;
+        }
+
+        .success-animation::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #4ade80;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        @keyframes successPulse {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="loginToggle">Login</button>
+            <button class="toggle-btn" id="registerToggle">Register</button>
+            <div class="toggle-slider" id="toggleSlider"></div>
+        </div>
+
+        <div class="forms-wrapper">
+            <!-- Login Form -->
+            <form class="form login" id="loginForm">
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" id="loginEmail" required>
+                    <div class="validation-message" id="loginEmailMsg"></div>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" placeholder="Password" id="loginPassword" required>
+                    <div class="validation-message" id="loginPasswordMsg"></div>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+                <div class="form-footer">
+                    Don't have an account? Switch to Register
+                </div>
+            </form>
+
+            <!-- Register Form -->
+            <form class="form register" id="registerForm">
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Full Name" id="registerName" required>
+                    <div class="validation-message" id="registerNameMsg"></div>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" id="registerEmail" required>
+                    <div class="validation-message" id="registerEmailMsg"></div>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" placeholder="Password" id="registerPassword" required>
+                    <div class="validation-message" id="registerPasswordMsg"></div>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" placeholder="Confirm Password" id="confirmPassword" required>
+                    <div class="validation-message" id="confirmPasswordMsg"></div>
+                </div>
+                <button type="submit" class="submit-btn">Register</button>
+                <div class="form-footer">
+                    Already have an account? Switch to Login
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class AuthForm {
+            constructor() {
+                this.isLogin = true;
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.setupValidation();
+            }
+
+            bindEvents() {
+                // Toggle buttons
+                document.getElementById('loginToggle').addEventListener('click', () => this.switchToLogin());
+                document.getElementById('registerToggle').addEventListener('click', () => this.switchToRegister());
+
+                // Form submissions
+                document.getElementById('loginForm').addEventListener('submit', (e) => this.handleLogin(e));
+                document.getElementById('registerForm').addEventListener('submit', (e) => this.handleRegister(e));
+            }
+
+            setupValidation() {
+                // Real-time validation for all inputs
+                const inputs = document.querySelectorAll('.form-input');
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => this.validateField(input));
+                    input.addEventListener('blur', () => this.validateField(input));
+                });
+            }
+
+            switchToLogin() {
+                if (this.isLogin) return;
+                
+                this.isLogin = true;
+                this.updateToggleState();
+                this.animateForms();
+                this.clearValidation();
+            }
+
+            switchToRegister() {
+                if (!this.isLogin) return;
+                
+                this.isLogin = false;
+                this.updateToggleState();
+                this.animateForms();
+                this.clearValidation();
+            }
+
+            updateToggleState() {
+                const loginToggle = document.getElementById('loginToggle');
+                const registerToggle = document.getElementById('registerToggle');
+                const slider = document.getElementById('toggleSlider');
+
+                if (this.isLogin) {
+                    loginToggle.classList.add('active');
+                    registerToggle.classList.remove('active');
+                    slider.classList.remove('register');
+                } else {
+                    loginToggle.classList.remove('active');
+                    registerToggle.classList.add('active');
+                    slider.classList.add('register');
+                }
+            }
+
+            animateForms() {
+                const loginForm = document.querySelector('.form.login');
+                const registerForm = document.querySelector('.form.register');
+
+                if (this.isLogin) {
+                    loginForm.classList.remove('hide');
+                    registerForm.classList.remove('show');
+                } else {
+                    loginForm.classList.add('hide');
+                    registerForm.classList.add('show');
+                }
+            }
+
+            validateField(input) {
+                const value = input.value.trim();
+                const id = input.id;
+                let isValid = true;
+                let message = '';
+
+                // Clear previous states
+                input.classList.remove('valid', 'invalid');
+                
+                switch (id) {
+                    case 'loginEmail':
+                    case 'registerEmail':
+                        isValid = this.validateEmail(value);
+                        message = isValid ? 'Valid email' : 'Please enter a valid email address';
+                        break;
+                    
+                    case 'loginPassword':
+                        isValid = value.length >= 6;
+                        message = isValid ? 'Password looks good' : 'Password must be at least 6 characters';
+                        break;
+                    
+                    case 'registerPassword':
+                        isValid = value.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value);
+                        message = isValid ? 'Strong password' : 'Password must be 8+ chars with uppercase, lowercase, and number';
+                        break;
+                    
+                    case 'confirmPassword':
+                        const password = document.getElementById('registerPassword').value;
+                        isValid = value === password && value.length > 0;
+                        message = isValid ? 'Passwords match' : 'Passwords do not match';
+                        break;
+                    
+                    case 'registerName':
+                        isValid = value.length >= 2;
+                        message = isValid ? 'Name looks good' : 'Name must be at least 2 characters';
+                        break;
+                }
+
+                // Update UI
+                const messageEl = document.getElementById(id + 'Msg');
+                if (value.length > 0) {
+                    input.classList.add(isValid ? 'valid' : 'invalid');
+                    messageEl.textContent = message;
+                    messageEl.classList.add('show');
+                    messageEl.classList.toggle('valid', isValid);
+                } else {
+                    messageEl.classList.remove('show');
+                }
+
+                return isValid;
+            }
+
+            validateEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            validateForm(formId) {
+                const form = document.getElementById(formId);
+                const inputs = form.querySelectorAll('.form-input');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!this.validateField(input) || input.value.trim() === '') {
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            clearValidation() {
+                const inputs = document.querySelectorAll('.form-input');
+                const messages = document.querySelectorAll('.validation-message');
+                
+                inputs.forEach(input => {
+                    input.classList.remove('valid', 'invalid');
+                    input.value = '';
+                });
+                
+                messages.forEach(message => {
+                    message.classList.remove('show', 'valid');
+                });
+            }
+
+            showSuccessAnimation(button) {
+                const animation = document.createElement('div');
+                animation.className = 'success-animation';
+                button.appendChild(animation);
+                
+                setTimeout(() => {
+                    animation.remove();
+                }, 600);
+            }
+
+            handleLogin(e) {
+                e.preventDefault();
+                
+                if (this.validateForm('loginForm')) {
+                    const submitBtn = e.target.querySelector('.submit-btn');
+                    submitBtn.style.background = '#4ade80';
+                    submitBtn.textContent = 'Success!';
+                    
+                    this.showSuccessAnimation(submitBtn);
+                    
+                    setTimeout(() => {
+                        alert('Login successful! (This is a demo)');
+                        submitBtn.style.background = '';
+                        submitBtn.textContent = 'Login';
+                        this.clearValidation();
+                    }, 1000);
+                }
+            }
+
+            handleRegister(e) {
+                e.preventDefault();
+                
+                if (this.validateForm('registerForm')) {
+                    const submitBtn = e.target.querySelector('.submit-btn');
+                    submitBtn.style.background = '#4ade80';
+                    submitBtn.textContent = 'Success!';
+                    
+                    this.showSuccessAnimation(submitBtn);
+                    
+                    setTimeout(() => {
+                        alert('Registration successful! (This is a demo)');
+                        submitBtn.style.background = '';
+                        submitBtn.textContent = 'Register';
+                        this.clearValidation();
+                    }, 1000);
+                }
+            }
+        }
+
+        // Initialize the form when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AuthForm();
+        });
+    </script>
+</body>
+</html>
