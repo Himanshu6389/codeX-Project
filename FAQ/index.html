@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive FAQ Accordion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s ease-out;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        
+        .faq-answer.expanded {
+            max-height: 500px;
+            opacity: 1;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .faq-item {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .faq-item:hover {
+            border-color: rgb(59 130 246);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .faq-item:hover {
+            border-color: rgb(147 197 253);
+        }
+        
+        .search-highlight {
+            background-color: yellow;
+            color: black;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+        
+        .dark .search-highlight {
+            background-color: rgb(234 179 8);
+        }
+        
+        @media (max-width: 768px) {
+            .faq-container {
+                padding: 0.5rem;
+            }
+        }
+        
+        /* Custom scrollbar for better UX */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header with Dark Mode Toggle -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    <i class="fas fa-question-circle text-blue-600 dark:text-blue-400 mr-3"></i>
+                    Frequently Asked Questions
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Find answers to common questions about our services</p>
+            </div>
+            <button 
+                id="darkModeToggle" 
+                class="p-3 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+                aria-label="Toggle dark mode"
+            >
+                <i class="fas fa-moon text-gray-700 dark:text-gray-300"></i>
+                <i class="fas fa-sun text-yellow-400" style="display: none;"></i>
+            </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="mb-8">
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search FAQs..." 
+                    class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors duration-200"
+                >
+            </div>
+        </div>
+
+        <!-- Toggle Options -->
+        <div class="mb-6 flex flex-wrap gap-4">
+            <button 
+                id="expandAllBtn" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                <i class="fas fa-expand-arrows-alt mr-2"></i>Expand All
+            </button>
+            <button 
+                id="collapseAllBtn" 
+                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+                <i class="fas fa-compress-arrows-alt mr-2"></i>Collapse All
+            </button>
+            <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="multipleToggle" class="sr-only">
+                <div class="relative">
+                    <div class="w-10 h-6 bg-gray-200 dark:bg-gray-700 rounded-full shadow-inner"></div>
+                    <div class="dot absolute w-4 h-4 bg-white rounded-full shadow -left-1 -top-1 transition"></div>
+                </div>
+                <span class="ml-3 text-gray-700 dark:text-gray-300">Allow Multiple Open</span>
+            </label>
+        </div>
+
+        <!-- FAQ Items -->
+        <div id="faqContainer" class="faq-container space-y-4">
+            <!-- FAQ items will be populated by JavaScript -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden text-center py-12">
+            <i class="fas fa-search text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No FAQs Found</h3>
+            <p class="text-gray-500 dark:text-gray-500">Try adjusting your search terms</p>
+        </div>
+    </div>
+
+    <script>
+        // FAQ Data
+        const faqData = [
+            {
+                id: 1,
+                question: "What services do you offer?",
+                answer: "We offer a comprehensive range of digital services including web development, mobile app development, UI/UX design, digital marketing, and cloud solutions. Our team specializes in creating custom solutions tailored to your business needs."
+            },
+            {
+                id: 2,
+                question: "How long does a typical project take?",
+                answer: "Project timelines vary depending on complexity and scope. A simple website might take 2-4 weeks, while complex applications can take 3-6 months or more. We provide detailed timelines during our initial consultation and keep you updated throughout the development process."
+            },
+            {
+                id: 3,
+                question: "What are your pricing models?",
+                answer: "We offer flexible pricing models including fixed-price projects, hourly rates, and retainer agreements. Pricing depends on project complexity, timeline, and specific requirements. We provide transparent quotes with no hidden fees."
+            },
+            {
+                id: 4,
+                question: "Do you provide ongoing support and maintenance?",
+                answer: "Yes, we offer comprehensive support and maintenance packages. This includes regular updates, security patches, performance monitoring, and technical support. We have different tiers of support to match your needs and budget."
+            },
+            {
+                id: 5,
+                question: "Can you work with our existing team?",
+                answer: "Absolutely! We frequently collaborate with in-house teams and other vendors. We can integrate seamlessly into your existing workflows and provide additional expertise where needed. Communication and collaboration are key to our approach."
+            },
+            {
+                id: 6,
+                question: "What technologies do you specialize in?",
+                answer: "Our expertise spans modern web technologies including React, Vue.js, Angular, Node.js, Python, PHP, and various databases. We also work with cloud platforms like AWS, Azure, and Google Cloud, as well as mobile technologies for iOS and Android development."
+            },
+            {
+                id: 7,
+                question: "How do you ensure project quality?",
+                answer: "We follow industry best practices including code reviews, automated testing, continuous integration, and quality assurance processes. Our team uses agile methodologies to ensure regular feedback and iterations throughout the development process."
+            },
+            {
+                id: 8,
+                question: "What is your refund policy?",
+                answer: "We offer a satisfaction guarantee with our milestone-based approach. If you're not satisfied with a deliverable, we'll work to address your concerns. For cancelled projects, refunds are processed based on work completed and our terms of service."
+            }
+        ];
+
+        // State management
+        let allowMultiple = false;
+        let currentlyExpanded = new Set();
+
+        // DOM elements
+        const faqContainer = document.getElementById('faqContainer');
+        const searchInput = document.getElementById('searchInput');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const multipleToggle = document.getElementById('multipleToggle');
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        const noResults = document.getElementById('noResults');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDarkMode();
+            renderFAQs(faqData);
+            setupEventListeners();
+            
+            // Add a small delay to ensure smooth initial transitions
+            setTimeout(() => {
+                document.body.classList.add('transitions-ready');
+            }, 100);
+        });
+
+        // Dark mode functionality
+        function initializeDarkMode() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+            updateDarkModeButton();
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateDarkModeButton();
+        }
+
+        function updateDarkModeButton() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const moonIcon = darkModeToggle.querySelector('.fa-moon');
+            const sunIcon = darkModeToggle.querySelector('.fa-sun');
+            
+            if (isDark) {
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'inline-block';
+                darkModeToggle.setAttribute('aria-label', 'Switch to light mode');
+            } else {
+                moonIcon.style.display = 'inline-block';
+                sunIcon.style.display = 'none';
+                darkModeToggle.setAttribute('aria-label', 'Switch to dark mode');
+            }
+            
+            // Force a reflow to ensure transitions work
+            document.body.offsetHeight;
+        }
+
+        // Render FAQ items
+        function renderFAQs(faqs) {
+            if (faqs.length === 0) {
+                faqContainer.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            faqContainer.classList.remove('hidden');
+            noResults.classList.add('hidden');
+
+            faqContainer.innerHTML = faqs.map(faq => `
+                <div class="faq-item bg-white dark:bg-gray-800 rounded-lg shadow-md" data-id="${faq.id}">
+                    <button 
+                        class="faq-question w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
+                        aria-expanded="false"
+                        aria-controls="answer-${faq.id}"
+                        role="button"
+                        tabindex="0"
+                    >
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white pr-4">
+                                ${faq.question}
+                            </h3>
+                            <i class="fas fa-chevron-down chevron text-gray-500 dark:text-gray-400 text-sm flex-shrink-0"></i>
+                        </div>
+                    </button>
+                    <div 
+                        id="answer-${faq.id}" 
+                        class="faq-answer px-6 text-gray-700 dark:text-gray-300 leading-relaxed"
+                        aria-hidden="true"
+                        role="region"
+                    >
+                        ${faq.answer}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle FAQ item
+        function toggleFAQ(faqId) {
+            const faqItem = document.querySelector(`[data-id="${faqId}"]`);
+            if (!faqItem) return; // Safety check
+            
+            const question = faqItem.querySelector('.faq-question');
+            const answer = faqItem.querySelector('.faq-answer');
+            const chevron = faqItem.querySelector('.chevron');
+            const isExpanded = answer.classList.contains('expanded');
+
+            if (!allowMultiple && !isExpanded) {
+                // Close all other items if multiple is not allowed
+                const allItems = document.querySelectorAll('.faq-item');
+                allItems.forEach(item => {
+                    const itemId = parseInt(item.dataset.id);
+                    if (itemId !== faqId) {
+                        const itemAnswer = item.querySelector('.faq-answer');
+                        if (itemAnswer.classList.contains('expanded')) {
+                            toggleFAQ(itemId);
+                        }
+                    }
+                });
+            }
+
+            if (isExpanded) {
+                // Collapse
+                answer.classList.remove('expanded');
+                chevron.classList.remove('rotated');
+                question.setAttribute('aria-expanded', 'false');
+                answer.setAttribute('aria-hidden', 'true');
+                currentlyExpanded.delete(faqId);
+            } else {
+                // Expand
+                answer.classList.add('expanded');
+                chevron.classList.add('rotated');
+                question.setAttribute('aria-expanded', 'true');
+                answer.setAttribute('aria-hidden', 'false');
+                currentlyExpanded.add(faqId);
+            }
+        }
+
+        // Search functionality
+        function searchFAQs(query) {
+            const filteredFAQs = faqData.filter(faq => 
+                faq.question.toLowerCase().includes(query.toLowerCase()) ||
+                faq.answer.toLowerCase().includes(query.toLowerCase())
+            );
+
+            // Clear currently expanded state when searching
+            currentlyExpanded.clear();
+
+            // Highlight search terms
+            const highlightedFAQs = filteredFAQs.map(faq => ({
+                ...faq,
+                question: highlightText(faq.question, query),
+                answer: highlightText(faq.answer, query)
+            }));
+
+            renderFAQs(highlightedFAQs);
+        }
+
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+
+        // Expand/Collapse all
+        function expandAll() {
+            // Temporarily allow multiple expansions
+            const originalMultiple = allowMultiple;
+            allowMultiple = true;
+            
+            const currentFAQs = document.querySelectorAll('.faq-item');
+            currentFAQs.forEach(faqItem => {
+                const faqId = parseInt(faqItem.dataset.id);
+                const answer = faqItem.querySelector('.faq-answer');
+                
+                // Only expand if not already expanded
+                if (!answer.classList.contains('expanded')) {
+                    toggleFAQ(faqId);
+                }
+            });
+            
+            // Restore original multiple setting
+            allowMultiple = originalMultiple;
+        }
+
+        function collapseAll() {
+            const currentFAQs = document.querySelectorAll('.faq-item');
+            currentFAQs.forEach(faqItem => {
+                const faqId = parseInt(faqItem.dataset.id);
+                const answer = faqItem.querySelector('.faq-answer');
+                
+                // Only collapse if currently expanded
+                if (answer.classList.contains('expanded')) {
+                    toggleFAQ(faqId);
+                }
+            });
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            // FAQ item clicks
+            faqContainer.addEventListener('click', (e) => {
+                const faqQuestion = e.target.closest('.faq-question');
+                if (faqQuestion) {
+                    const faqItem = faqQuestion.closest('.faq-item');
+                    const faqId = parseInt(faqItem.dataset.id);
+                    toggleFAQ(faqId);
+                }
+            });
+
+            // Keyboard navigation
+            faqContainer.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    const faqQuestion = e.target.closest('.faq-question');
+                    if (faqQuestion) {
+                        e.preventDefault();
+                        const faqItem = faqQuestion.closest('.faq-item');
+                        const faqId = parseInt(faqItem.dataset.id);
+                        toggleFAQ(faqId);
+                    }
+                }
+            });
+
+            // Search
+            searchInput.addEventListener('input', (e) => {
+                searchFAQs(e.target.value);
+            });
+
+            // Dark mode toggle
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Multiple toggle
+            multipleToggle.addEventListener('change', (e) => {
+                allowMultiple = e.target.checked;
+                
+                // Update toggle appearance
+                const dot = e.target.nextElementSibling.querySelector('.dot');
+                if (allowMultiple) {
+                    dot.style.transform = 'translateX(16px)';
+                    dot.parentElement.style.backgroundColor = '#3b82f6';
+                } else {
+                    dot.style.transform = 'translateX(0px)';
+                    dot.parentElement.style.backgroundColor = '';
+                }
+            });
+
+            // Expand/Collapse all buttons
+            expandAllBtn.addEventListener('click', expandAll);
+            collapseAllBtn.addEventListener('click', collapseAll);
+        }
+
+        // Initialize toggle styles
+        multipleToggle.addEventListener('change', function() {
+            const dot = this.nextElementSibling.querySelector('.dot');
+            if (this.checked) {
+                dot.style.transform = 'translateX(16px)';
+                dot.parentElement.style.backgroundColor = '#3b82f6';
+            } else {
+                dot.style.transform = 'translateX(0px)';
+                dot.parentElement.style.backgroundColor = '';
+            }
+        });
+    </script>
+</body>
+</html>
