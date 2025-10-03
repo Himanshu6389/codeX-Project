@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Carousel with Indicators</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .carousel-container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .carousel {
+            position: relative;
+            overflow: hidden;
+            height: 500px;
+        }
+
+        .carousel-slides {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            width: 20%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .slide:hover img {
+            transform: scale(1.05);
+        }
+
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 40px 30px 30px;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+        }
+
+        .slide.active .slide-content {
+            transform: translateY(0);
+        }
+
+        .slide-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+            animation-delay: 0.2s;
+        }
+
+        .slide-description {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+            animation-delay: 0.4s;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-title,
+        .slide-description {
+            transform: translateY(20px);
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #333;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-arrow.prev {
+            left: 20px;
+        }
+
+        .nav-arrow.next {
+            right: 20px;
+        }
+
+        .indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .indicator.active {
+            background: #fff;
+            transform: scale(1.3);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+        }
+
+        .indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
+        }
+
+        .play-pause-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #333;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .play-pause-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .pause-indicator {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .pause-indicator.show {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.1s linear;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .carousel {
+                height: 400px;
+            }
+
+            .nav-arrow {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .nav-arrow.prev {
+                left: 15px;
+            }
+
+            .nav-arrow.next {
+                right: 15px;
+            }
+
+            .slide-content {
+                padding: 30px 20px 20px;
+            }
+
+            .slide-title {
+                font-size: 24px;
+            }
+
+            .slide-description {
+                font-size: 14px;
+            }
+
+            .indicators {
+                bottom: 15px;
+                gap: 12px;
+            }
+
+            .indicator {
+                width: 10px;
+                height: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .carousel {
+                height: 300px;
+            }
+
+            .slide-title {
+                font-size: 20px;
+            }
+
+            .slide-content {
+                padding: 20px 15px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel">
+            <div class="carousel-slides" id="carouselSlides">
+                <div class="slide active">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=95" alt="Mountain Landscape">
+                    <div class="slide-content">
+                        <div class="slide-title">Majestic Mountains</div>
+                        <div class="slide-description">Discover breathtaking mountain landscapes with pristine views and endless adventures waiting to be explored.</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&h=1080&fit=crop&q=95" alt="Tropical Beach">
+                    <div class="slide-content">
+                        <div class="slide-title">Tropical Paradise</div>
+                        <div class="slide-description">Escape to crystal clear waters and pristine beaches where relaxation meets natural beauty.</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1920&h=1080&fit=crop&q=95" alt="Forest Path">
+                    <div class="slide-content">
+                        <div class="slide-title">Enchanted Forest</div>
+                        <div class="slide-description">Walk through mystical forest paths where ancient trees create a canopy of wonder and tranquility.</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1920&h=1080&fit=crop&q=95" alt="City Skyline">
+                    <div class="slide-content">
+                        <div class="slide-title">Urban Adventure</div>
+                        <div class="slide-description">Experience the vibrant energy of city life with stunning architecture and endless possibilities.</div>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1920&h=1080&fit=crop&q=95" alt="Desert Sunset">
+                    <div class="slide-content">
+                        <div class="slide-title">Desert Dreams</div>
+                        <div class="slide-description">Witness spectacular sunsets over vast desert landscapes where silence speaks louder than words.</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="nav-arrow prev" onclick="previousSlide()">‹</button>
+            <button class="nav-arrow next" onclick="nextSlide()">›</button>
+
+            <div class="indicators">
+                <div class="indicator active" onclick="goToSlide(0)"></div>
+                <div class="indicator" onclick="goToSlide(1)"></div>
+                <div class="indicator" onclick="goToSlide(2)"></div>
+                <div class="indicator" onclick="goToSlide(3)"></div>
+                <div class="indicator" onclick="goToSlide(4)"></div>
+            </div>
+
+            <button class="play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">⏸️</button>
+            <div class="pause-indicator" id="pauseIndicator">Auto-play paused</div>
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <script>
+        class ImageCarousel {
+            constructor() {
+                this.currentSlide = 0;
+                this.totalSlides = 5;
+                this.autoPlayInterval = 4000; // 4 seconds
+                this.isPlaying = true;
+                this.isPaused = false;
+                
+                this.slidesContainer = document.getElementById('carouselSlides');
+                this.indicators = document.querySelectorAll('.indicator');
+                this.pauseIndicator = document.getElementById('pauseIndicator');
+                this.progressBar = document.getElementById('progressBar');
+                this.carouselContainer = document.querySelector('.carousel-container');
+                this.playPauseBtn = document.getElementById('playPauseBtn');
+                
+                this.init();
+            }
+
+            init() {
+                this.startAutoPlay();
+                this.setupEventListeners();
+                this.updateProgressBar();
+            }
+
+            setupEventListeners() {
+                // Touch events for mobile
+                let startX = 0;
+                let endX = 0;
+
+                this.carouselContainer.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    this.pauseAutoPlay();
+                });
+
+                this.carouselContainer.addEventListener('touchend', (e) => {
+                    endX = e.changedTouches[0].clientX;
+                    const diff = startX - endX;
+                    
+                    if (Math.abs(diff) > 50) { // Minimum swipe distance
+                        if (diff > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.previousSlide();
+                        }
+                    }
+                    
+                    setTimeout(() => {
+                        this.resumeAutoPlay();
+                    }, 1000);
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') {
+                        this.previousSlide();
+                    } else if (e.key === 'ArrowRight') {
+                        this.nextSlide();
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        this.toggleAutoPlay();
+                    }
+                });
+            }
+
+            updateSlide() {
+                // Move slides
+                const translateX = -this.currentSlide * 20;
+                this.slidesContainer.style.transform = `translateX(${translateX}%)`;
+
+                // Update active states
+                document.querySelectorAll('.slide').forEach((slide, index) => {
+                    slide.classList.toggle('active', index === this.currentSlide);
+                });
+
+                // Update indicators
+                this.indicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === this.currentSlide);
+                });
+
+                // Reset progress bar
+                this.resetProgressBar();
+            }
+
+            nextSlide() {
+                this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+                this.updateSlide();
+            }
+
+            previousSlide() {
+                this.currentSlide = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+                this.updateSlide();
+            }
+
+            goToSlide(index) {
+                this.currentSlide = index;
+                this.updateSlide();
+                
+                // Reset autoplay timer when manually navigating
+                if (this.isPlaying) {
+                    this.resetAutoPlay();
+                }
+            }
+
+            startAutoPlay() {
+                if (!this.isPlaying || this.isPaused) return;
+                
+                this.autoPlayTimer = setInterval(() => {
+                    this.nextSlide();
+                }, this.autoPlayInterval);
+
+                this.updateProgressBar();
+            }
+
+            pauseAutoPlay() {
+                this.isPaused = true;
+                clearInterval(this.autoPlayTimer);
+                if (this.progressTimer) {
+                    clearInterval(this.progressTimer);
+                }
+            }
+
+            resumeAutoPlay() {
+                this.isPaused = false;
+                this.startAutoPlay();
+            }
+
+            resetAutoPlay() {
+                clearInterval(this.autoPlayTimer);
+                if (this.progressTimer) {
+                    clearInterval(this.progressTimer);
+                }
+                this.startAutoPlay();
+            }
+
+            toggleAutoPlay() {
+                this.isPlaying = !this.isPlaying;
+                
+                if (this.isPlaying) {
+                    this.isPaused = false;
+                    this.startAutoPlay();
+                    this.hidePauseIndicator();
+                    this.playPauseBtn.innerHTML = '⏸️';
+                } else {
+                    this.isPaused = true;
+                    clearInterval(this.autoPlayTimer);
+                    clearInterval(this.progressTimer);
+                    this.showPauseIndicator();
+                    this.playPauseBtn.innerHTML = '▶️';
+                    this.progressBar.style.width = '0%';
+                }
+            }
+
+            updateProgressBar() {
+                if (!this.isPlaying || this.isPaused) return;
+                
+                let progress = 0;
+                const increment = 100 / (this.autoPlayInterval / 50);
+                
+                this.progressTimer = setInterval(() => {
+                    if (this.isPlaying && !this.isPaused) {
+                        progress += increment;
+                        this.progressBar.style.width = `${progress}%`;
+                        
+                        if (progress >= 100) {
+                            progress = 0;
+                        }
+                    }
+                }, 50);
+            }
+
+            resetProgressBar() {
+                this.progressBar.style.width = '0%';
+                if (this.progressTimer) {
+                    clearInterval(this.progressTimer);
+                }
+                if (this.isPlaying && !this.isPaused) {
+                    this.updateProgressBar();
+                }
+            }
+
+            showPauseIndicator() {
+                this.pauseIndicator.classList.add('show');
+            }
+
+            hidePauseIndicator() {
+                this.pauseIndicator.classList.remove('show');
+            }
+        }
+
+        // Global functions for button clicks
+        let carousel;
+
+        function nextSlide() {
+            carousel.nextSlide();
+            carousel.resetAutoPlay();
+        }
+
+        function previousSlide() {
+            carousel.previousSlide();
+            carousel.resetAutoPlay();
+        }
+
+        function goToSlide(index) {
+            carousel.goToSlide(index);
+        }
+
+        function togglePlayPause() {
+            carousel.toggleAutoPlay();
+        }
+
+        // Initialize carousel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            carousel = new ImageCarousel();
+        });
+    </script>
+</body>
+</html>
